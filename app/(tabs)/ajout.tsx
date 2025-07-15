@@ -1,3 +1,4 @@
+import useLocation from "@/hooks/useLocation";
 import { database, DATABASE_ID, TASK_COLLECTION_ID } from "@/lib/appwrite";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "expo-router";
@@ -13,10 +14,23 @@ export default function Index() {
     const [Title, setTitle] = useState<string>("");
     const [Description, setDescription] = useState<string>("");
     const [Tache, setTache] = useState<DiftTask>("jardinage");
+    const [Ville, setVille] = useState<string>("");
     const [error, seterror] = useState<string>("");
     const {user} = useAuth();
     const router = useRouter();
     const theme = useTheme();
+    
+    const {latitude, longitude, errorMsg} = useLocation();
+
+    const [taskLatitude, setTaskLatitude] = useState<number | null>(null);
+    const [taskLongitude, setTaskLongitude] = useState<number | null>(null);
+
+    const handleAddLocation = () => {
+    if (latitude !== null && longitude !== null) {
+      setTaskLatitude(latitude);
+      setTaskLongitude(longitude);
+    }
+  };
 
     const handleSubmit = async () => {
         if (!user) return;
@@ -30,6 +44,9 @@ export default function Index() {
                     Title,
                     Description,
                     Tache,
+                    Ville,
+                    latitude: taskLatitude,
+                    longitude: taskLongitude,
                     Task_count : 0,
                     Last_completed: new Date().toISOString(),
                     created_at: new Date().toISOString(),
@@ -68,6 +85,22 @@ export default function Index() {
                 buttons={DiftTask.map((task)=>({value : task, label:task}))}
                 />
         </View>
+        <View>
+            <TextInput
+                style={style.text}
+                label = "Ville" 
+                mode = "outlined"
+                onChangeText={setVille}
+                value={Ville}
+            />
+        </View>
+        <Button
+        mode="outlined"
+        onPress={handleAddLocation}
+        style={{ marginTop: 10 }}
+      >
+        Utiliser ma position actuelle
+      </Button>
         <Button mode ="contained" onPress = {handleSubmit} disabled={!Title || !Description}>
             Ajouter la tâche
         </Button>

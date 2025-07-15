@@ -10,3 +10,5 @@ export const database = new Databases(client);
 
 export const DATABASE_ID = process.env.EXPO_PUBLIC_DB_ID!;
 export const TASK_COLLECTION_ID = process.env.EXPO_PUBLIC_TASK_COLLECTION_ID!;
+export const USER_COLLECTION_ID = process.env.EXPO_PUBLIC_USER_COLLECTION_ID!;
+export const BUCKET_ID= process.env.EXPO_PUBLIC_BUCKET_ID!;

@@ -1,7 +1,7 @@
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
-import { PaperProvider } from "react-native-paper";
+import { IconButton, PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 function RouteGuard({children}: {children: React.ReactNode}) {
@@ -30,6 +30,21 @@ export default function RootLayout() {
           <RouteGuard>
             <Stack>
               <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+              <Stack.Screen
+                name="modifier-profil"
+                options={{
+                  title: "Modifier ton profil",
+                  headerLeft: () => {
+                    const router = useRouter();
+                    return (
+                      <IconButton
+                        icon="arrow-left"
+                        onPress={() => router.back()}
+                      />
+                    );
+                  },
+                }}
+              />
             </Stack>
           </RouteGuard>
         </SafeAreaProvider>
