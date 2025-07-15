@@ -9,9 +9,9 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerStyle: {
-          backgroundColor: "transparent", // 🎯 Transparence du haut
+          backgroundColor: "#fff", // blanc opaque
         },
-        headerTransparent: true, // ✅ Important : active la transparence
+        headerTransparent: false, // le header est bien opaque et au-dessus
         headerShadowVisible: false,
         tabBarStyle: {
           backgroundColor: "#f5f5f5",

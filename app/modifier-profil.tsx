@@ -7,8 +7,6 @@ import { useEffect, useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { ID, Query, Storage } from "react-native-appwrite";
 import { Button, TextInput, useTheme } from "react-native-paper";
-// ⚠️ Assure-toi d'installer expo-image-picker et expo-file-system :
-// npx expo install expo-image-picker expo-file-system
 
 import { client } from "@/lib/appwrite";
 

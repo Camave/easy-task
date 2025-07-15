@@ -45,6 +45,21 @@ export default function RootLayout() {
                   },
                 }}
               />
+              <Stack.Screen
+                name="profil_utilisateur"
+                options={{
+                  title: "Profil",
+                  headerLeft: () => {
+                    const router = useRouter();
+                    return (
+                      <IconButton
+                        icon="arrow-left"
+                        onPress={() => router.back()}
+                      />
+                    );
+                  },
+                }}
+              />
             </Stack>
           </RouteGuard>
         </SafeAreaProvider>
