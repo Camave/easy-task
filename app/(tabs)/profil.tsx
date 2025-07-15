@@ -6,13 +6,19 @@ import { useCallback, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Query } from "react-native-appwrite";
 import { Button } from "react-native-paper";
+import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 
 export default function Profil() {
   const { signOut, user } = useAuth();
   const [tache, setTache] = useState<Tache[]>();
   const [User_profil, setUser_profil] = useState<User_P[]>([]);
   const [allProfils, setAllProfils] = useState<User_P[]>([]);
-  const [tachesOuChoisi, setTachesOuChoisi] = useState<Tache[]>([]);
+  const [tachesOuPostule, setTachesOuPostule] = useState<Tache[]>([]);
+  const [index, setIndex] = useState(0);
+  const [routes] = useState([
+    { key: 'demandes', title: 'Mes demandes' },
+    { key: 'realiser', title: 'À réaliser' },
+  ]);
 
   const router = useRouter();
 
@@ -21,7 +27,7 @@ export default function Profil() {
       fetchHabits();
       fetchProfils();
       fetchAllProfils();
-      fetchTachesOuChoisi();
+      fetchTachesOuPostule();
     }, [user])
   );
 
@@ -64,15 +70,15 @@ export default function Profil() {
     }
   };
 
-  const fetchTachesOuChoisi = async () => {
+  const fetchTachesOuPostule = async () => {
     try {
       if (!user) return;
       const response = await database.listDocuments(
         DATABASE_ID,
         TASK_COLLECTION_ID,
-        [Query.equal("chosenUserId", user.$id)]
+        [Query.contains("acceptedBy", user.$id)]
       );
-      setTachesOuChoisi(response.documents as Tache[]);
+      setTachesOuPostule(response.documents as Tache[]);
     } catch (error) {
       console.error(error);
     }
@@ -97,8 +103,107 @@ export default function Profil() {
     photoUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_BUCKET_ID}/files/${User_profil[0].photo_id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}`;
   }
 
+  // Onglet 1 : Mes demandes
+  const DemandesRoute = () => (
+    <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+      <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>T'es demandes :</Text>
+      {tache && tache.length > 0 ? (
+        tache.map((item, idx) => (
+          <View key={idx} style={{ marginBottom: 12, backgroundColor: '#F2F2F2', padding: 8, borderRadius: 8 }}>
+            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.Title}</Text>
+            <Text>{item.Description}</Text>
+            <Text>{item.Tache}</Text>
+            {/* Affichage du prestataire choisi */}
+            {item.chosenUserId ? (
+              <Text style={{ color: 'green', fontWeight: 'bold', marginTop: 4 }}>
+                Prestataire choisi : {(() => {
+                  const profilChoisi = allProfils.find(p => p.User_id === item.chosenUserId);
+                  return profilChoisi ? profilChoisi.nom : item.chosenUserId;
+                })()}
+              </Text>
+            ) : null}
+            <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Personnes ayant accepté :</Text>
+            {item.acceptedBy && item.acceptedBy.length > 0 ? (
+              item.acceptedBy.map((userId: string) => {
+                const profil = allProfils.find(p => p.User_id === userId);
+                return (
+                  <View key={userId} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <Text style={{ marginRight: 8 }}>{profil?.nom ?? userId}</Text>
+                    <Button
+                      mode={item.chosenUserId === userId ? "contained" : "outlined"}
+                      onPress={() => handleChooseUser(item.$id, userId)}
+                      disabled={item.chosenUserId === userId}
+                    >
+                      {item.chosenUserId === userId ? "Choisi" : "Choisir"}
+                    </Button>
+                  </View>
+                );
+              })
+            ) : (
+              <Text style={{ color: '#888' }}>Aucune personne n'a encore accepté</Text>
+            )}
+          </View>
+        ))
+      ) : (
+        <Text style={{ color: '#888', marginTop: 16 }}>Aucune tâche à afficher</Text>
+      )}
+    </ScrollView>
+  );
+
+  // Onglet 2 : À réaliser
+  const RealiserRoute = () => (
+    <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+      <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>Tâches où tu as postulé :</Text>
+      {tachesOuPostule.length > 0 ? (
+        tachesOuPostule.map((item, idx) => {
+          // Chercher le profil du créateur de la tâche
+          const profilCreateur = allProfils.find(p => p.User_id === item.User_id);
+          let statut = '';
+          let statutColor = '#888';
+          if (item.chosenUserId === user?.$id) {
+            statut = 'Accepté';
+            statutColor = '#388E3C'; // vert
+          } else if (item.chosenUserId && item.chosenUserId !== user?.$id) {
+            statut = 'Refusé';
+            statutColor = '#d32f2f'; // rouge
+          } else {
+            statut = 'En attente';
+            statutColor = '#888'; // gris
+          }
+          return (
+            <View key={"chosen-" + idx} style={{ marginBottom: 12, backgroundColor: '#F2F2F2', padding: 8, borderRadius: 8 }}>
+              {/* Affichage du profil du créateur */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                {profilCreateur?.photo_id && (
+                  <Image
+                    source={{ uri: `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_BUCKET_ID}/files/${profilCreateur.photo_id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}` }}
+                    style={{ width: 36, height: 36, borderRadius: 18, marginRight: 8, backgroundColor: '#eee' }}
+                  />
+                )}
+                <Text style={{ fontWeight: 'bold' }}>
+                  {profilCreateur?.nom ? `Proposé par : ${profilCreateur.nom}` : `Proposé par : ${item.User_id}`}
+                </Text>
+              </View>
+              <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.Title}</Text>
+              <Text>{item.Description}</Text>
+              <Text>{item.Tache}</Text>
+              <Text style={{ fontWeight: 'bold', marginTop: 4, color: statutColor }}>Statut : {statut}</Text>
+            </View>
+          );
+        })
+      ) : (
+        <Text style={{ color: '#888' }}>Aucune tâche où tu as postulé pour le moment.</Text>
+      )}
+    </ScrollView>
+  );
+
+  const renderScene = SceneMap({
+    demandes: DemandesRoute,
+    realiser: RealiserRoute,
+  });
+
   return (
-    <ScrollView style={styles.page} contentContainerStyle={{ paddingBottom: 32 }}>
+    <View style={[styles.page, { flex: 1 }]}> 
       <View style={styles.headerRow}>
         <View style={styles.profileInfo}>
           {photoUrl && (
@@ -126,83 +231,23 @@ export default function Profil() {
         </View>
       </View>
       <View style={styles.divider} />
-      <View>
-        {/* Tâches créées par l'utilisateur connecté */}
-        {tache && tache.length > 0 ? (
-          tache.map((item, idx) => (
-            <View key={idx} style={{ marginBottom: 12 }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.Title}</Text>
-              <Text>{item.Description}</Text>
-              <Text>{item.Tache}</Text>
-              {/* Affichage du prestataire choisi */}
-              {item.chosenUserId ? (
-                <Text style={{ color: 'green', fontWeight: 'bold', marginTop: 4 }}>
-                  Prestataire choisi : {(() => {
-                    const profilChoisi = allProfils.find(p => p.User_id === item.chosenUserId);
-                    return profilChoisi ? profilChoisi.nom : item.chosenUserId;
-                  })()}
-                </Text>
-              ) : null}
-              <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Personnes ayant accepté :</Text>
-              {item.acceptedBy && item.acceptedBy.length > 0 ? (
-                item.acceptedBy.map((userId: string) => {
-                  const profil = allProfils.find(p => p.User_id === userId);
-                  return (
-                    <View key={userId} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                      <Text style={{ marginRight: 8 }}>{profil?.nom ?? userId}</Text>
-                      <Button
-                        mode={item.chosenUserId === userId ? "contained" : "outlined"}
-                        onPress={() => handleChooseUser(item.$id, userId)}
-                        disabled={item.chosenUserId === userId}
-                      >
-                        {item.chosenUserId === userId ? "Choisi" : "Choisir"}
-                      </Button>
-                    </View>
-                  );
-                })
-              ) : (
-                <Text style={{ color: '#888' }}>Aucune personne n'a encore accepté</Text>
-              )}
-            </View>
-          ))
-        ) : (
-          <Text style={{ color: '#888', marginTop: 16 }}>Aucune tâche à afficher</Text>
+      <TabView
+        navigationState={{ index, routes }}
+        renderScene={renderScene}
+        onIndexChange={setIndex}
+        renderTabBar={(props: any) => (
+          <TabBar
+            {...props}
+            indicatorStyle={{ backgroundColor: '#000' }}
+            style={{ backgroundColor: '#fff' }}
+            labelStyle={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}
+            activeColor="#000"
+            inactiveColor="#888"
+          />
         )}
-
-        {/* Tâches où l'utilisateur connecté a été choisi comme prestataire */}
-        <>
-          <Text style={{ fontWeight: 'bold', fontSize: 18, marginTop: 32, marginBottom: 8 }}>Tâches où tu as été choisi comme prestataire :</Text>
-          {tachesOuChoisi.length > 0 ? (
-            tachesOuChoisi.map((item, idx) => {
-              // Chercher le profil du créateur de la tâche
-              const profilCreateur = allProfils.find(p => p.User_id === item.User_id);
-              return (
-                <View key={"chosen-" + idx} style={{ marginBottom: 12, backgroundColor: '#e6ffe6', padding: 8, borderRadius: 8 }}>
-                  {/* Affichage du profil du créateur */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                    {profilCreateur?.photo_id && (
-                      <Image
-                        source={{ uri: `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_BUCKET_ID}/files/${profilCreateur.photo_id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}` }}
-                        style={{ width: 36, height: 36, borderRadius: 18, marginRight: 8, backgroundColor: '#eee' }}
-                      />
-                    )}
-                    <Text style={{ fontWeight: 'bold' }}>
-                      {profilCreateur?.nom ? `Proposé par : ${profilCreateur.nom}` : `Proposé par : ${item.User_id}`}
-                    </Text>
-                  </View>
-                  <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.Title}</Text>
-                  <Text>{item.Description}</Text>
-                  <Text>{item.Tache}</Text>
-                  <Text style={{ color: 'green', fontWeight: 'bold', marginTop: 4 }}>Tu as été choisi comme prestataire !</Text>
-                </View>
-              );
-            })
-          ) : (
-            <Text style={{ color: '#888' }}>Aucune tâche où tu as été choisi pour le moment.</Text>
-          )}
-        </>
-      </View>
-    </ScrollView>
+        style={{ backgroundColor: '#fff', flex: 1, marginTop:-60 }}
+      />
+    </View>
   );
 }
 
