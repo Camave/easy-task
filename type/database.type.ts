@@ -11,6 +11,8 @@ export interface Tache extends Models.Document{
     Task_count : number,
     Last_completed: string,
     created_at: string,
+    acceptedBy?: string[];
+    chosenUserId?: string | null;
 }
 
 export interface User_P extends Models.Document{

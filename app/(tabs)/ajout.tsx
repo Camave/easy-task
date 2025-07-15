@@ -26,11 +26,11 @@ export default function Index() {
     const [taskLongitude, setTaskLongitude] = useState<number | null>(null);
 
     const handleAddLocation = () => {
-    if (latitude !== null && longitude !== null) {
-      setTaskLatitude(latitude);
-      setTaskLongitude(longitude);
-    }
-  };
+      if (latitude !== null && longitude !== null) {
+        setTaskLatitude(latitude);
+        setTaskLongitude(longitude);
+      }
+    };
 
     const handleSubmit = async () => {
         if (!user) return;
@@ -50,6 +50,8 @@ export default function Index() {
                     Task_count : 0,
                     Last_completed: new Date().toISOString(),
                     created_at: new Date().toISOString(),
+                    acceptedBy: [],
+                    chosenUserId: null,
                 }
             );
 

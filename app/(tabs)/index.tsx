@@ -8,8 +8,7 @@ import { useCallback, useState } from "react";
 import { Dimensions, FlatList, Image, StyleSheet, View } from "react-native";
 import { Query } from "react-native-appwrite";
 import MapView, { Marker } from 'react-native-maps';
-import { Text } from "react-native-paper";
-
+import { Button, Text } from "react-native-paper";
 
 export default function Index() {  
   const { user } = useAuth()
@@ -50,14 +49,31 @@ export default function Index() {
 
   const {latitude, longitude, errorMsg} = useLocation();
 
+  const handleAcceptTask = async (taskId: string) => {
+    if (!user) return;
+    try {
+      const task = tache?.find(t => t.$id === taskId);
+      if (!task) return;
+      if (task.acceptedBy?.includes(user.$id)) return; // déjà accepté
+      await database.updateDocument(
+        DATABASE_ID,
+        TASK_COLLECTION_ID,
+        taskId,
+        { acceptedBy: [...(task.acceptedBy || []), user.$id] }
+      );
+      fetchHabits();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const renderItem = ({ item }: { item: Tache }) => {
-    // Cherche le profil de la personne qui a créé la tâche
     const profil = allProfils.find(p => p.User_id === item.User_id);
-    // Construit l'URL de la photo si elle existe
     let photoUrl: string | null = null;
     if (profil?.photo_id) {
       photoUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_BUCKET_ID}/files/${profil.photo_id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}`;
     }
+    const dejaAccepte = item.acceptedBy?.includes(user?.$id ?? "");
     return (
       <View style={[styles.page, { height: Dimensions.get('window').height }]}> 
         {photoUrl && (
@@ -92,6 +108,13 @@ export default function Index() {
             />
           </MapView>
         )}
+        <Button 
+          mode={dejaAccepte ? "outlined" : "contained"}
+          disabled={dejaAccepte}
+          onPress={() => handleAcceptTask(item.$id)}
+        >
+          {dejaAccepte ? "Déjà accepté" : "Accepter"}
+        </Button>
       </View>
     );
   };
@@ -99,7 +122,7 @@ export default function Index() {
   return (
     <View style={{ flex: 1 }}>
       <FlatList
-        data={tache}
+        data={tache?.filter(item => !item.chosenUserId || item.chosenUserId === "")}
         keyExtractor={(_, index) => index.toString()}
         renderItem={renderItem}
         pagingEnabled
