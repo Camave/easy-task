@@ -102,7 +102,7 @@ export default function ModifierProfil() {
         await database.createDocument(
           DATABASE_ID,
           USER_COLLECTION_ID,
-          ID.unique(),
+          user.$id,
           { User_id: user.$id, nom, age, bio, photo_id: uploadedPhotoId }
         );
       }

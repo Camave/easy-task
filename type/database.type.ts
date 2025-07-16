@@ -22,3 +22,24 @@ export interface User_P extends Models.Document{
     User_id: string, 
     photo_id:string,
 }
+
+export interface Message extends Models.Document{
+    $id: string;
+    conversationId: string;
+    senderId: string;
+    content: string;
+    timestamp: string;
+    read: boolean;
+    $createdAt: string;
+    $updatedAt: string;
+  }
+  
+export interface Conversation extends Models.Document{
+    $id: string;
+    participants: string[];
+    lastMessage: string;
+    lastMessageTime: string;
+    createdAt: string;
+    $createdAt: string;
+    $updatedAt: string;
+}

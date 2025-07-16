@@ -1,6 +1,8 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
-import EvilIcons from '@expo/vector-icons/EvilIcons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
+
 
 import { Tabs } from "expo-router";
 
@@ -24,6 +26,22 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
       }}
     >
+      <Tabs.Screen
+        name="MessagingScreen"
+        options={{
+          headerTitle: "Easy Task",
+          headerTitleStyle: {
+            color: "black",
+            fontSize: 20,
+            fontWeight: "bold",
+          },
+          headerTitleAlign: "left",
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="message-reply-text-outline" size={28} color={color} />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="index"
         options={{
@@ -69,7 +87,7 @@ export default function TabsLayout() {
           headerTitleAlign: "left",
           title: "Profil",
           tabBarIcon: ({ color }) => (
-            <EvilIcons name="user" size={37} color={color} />
+            <MaterialCommunityIcons name="account-circle-outline" size={30} color={color} />
           ),
         }}
       />

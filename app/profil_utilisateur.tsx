@@ -1,15 +1,43 @@
 import { database, DATABASE_ID, TASK_COLLECTION_ID, USER_COLLECTION_ID } from "@/lib/appwrite";
+import { useAuth } from "@/lib/auth-context";
+import { MessagingService } from "@/service/messagingService";
 import { Tache, User_P } from "@/type/database.type";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Query } from "react-native-appwrite";
+import { Query, } from "react-native-appwrite";
+import { Button } from "react-native-paper";
 
 export default function ProfilUtilisateur() {
   const { userId } = useLocalSearchParams();
   const USER_ID_TO_SHOW = userId as string | undefined;
   const [profil, setProfil] = useState<User_P | null>(null);
   const [taches, setTaches] = useState<Tache[]>([]);
+  const { user } = useAuth();
+  const router = useRouter();
+  const [loadingConv, setLoadingConv] = useState(false);
+
+  const handleStartConversation = async () => {
+    if (!user || !USER_ID_TO_SHOW) return;
+    setLoadingConv(true);
+    try {
+      // Cherche une conversation existante
+      let conversation = await MessagingService.findConversation(user.$id, USER_ID_TO_SHOW);
+      // Sinon, la crée
+      if (!conversation) {
+        conversation = await MessagingService.createConversation([user.$id, USER_ID_TO_SHOW]);
+      }
+      // Redirige vers la messagerie/chat avec cette conversation
+      router.push({
+        pathname: '/(tabs)/MessagingScreen',
+        params: { conversationId: conversation.$id }
+      });
+    } catch (err) {
+      alert("Erreur lors de l'ouverture de la conversation");
+    } finally {
+      setLoadingConv(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof USER_ID_TO_SHOW !== 'string' || !USER_ID_TO_SHOW) return;
@@ -59,6 +87,18 @@ export default function ProfilUtilisateur() {
         <Text style={styles.bio}>{profil?.bio}</Text>
       </View>
       <View style={styles.divider} />
+      {user && user.$id !== USER_ID_TO_SHOW && (
+        <View style={{ marginBottom: 16 }}>
+          <Button
+            mode="contained"
+            onPress={handleStartConversation}
+            loading={loadingConv}
+            disabled={loadingConv}
+          >
+            {`Discuter avec ${profil?.nom || "cet utilisateur"}`}
+          </Button>
+        </View>
+      )}
       <Text style={styles.sectionTitle}>Tâches publiées</Text>
       {taches.length > 0 ? (
         taches.map((item, idx) => (
