@@ -60,7 +60,36 @@ export default function RootLayout() {
                   },
                 }}
               />
-              
+              <Stack.Screen
+                name="map"
+                options={{
+                  title: "Map",
+                  headerLeft: () => {
+                    const router = useRouter();
+                    return (
+                      <IconButton
+                        icon="arrow-left"
+                        onPress={() => router.back()}
+                      />
+                    );
+                  },
+                }}
+              />
+              <Stack.Screen
+                name="TaskDetailScreen"
+                options={{
+                  title: "tache",
+                  headerLeft: () => {
+                    const router = useRouter();
+                    return (
+                      <IconButton
+                        icon="arrow-left"
+                        onPress={() => router.back()}
+                      />
+                    );
+                  },
+                }}
+              />  
             </Stack>
           </RouteGuard>
         </SafeAreaProvider>

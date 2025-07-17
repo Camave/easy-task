@@ -4,7 +4,7 @@ import { MessagingService } from "@/service/messagingService";
 import { Tache, User_P } from "@/type/database.type";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Query, } from "react-native-appwrite";
 import { Button } from "react-native-paper";
 
@@ -102,11 +102,16 @@ export default function ProfilUtilisateur() {
       <Text style={styles.sectionTitle}>Tâches publiées</Text>
       {taches.length > 0 ? (
         taches.map((item, idx) => (
-          <View key={idx} style={styles.taskCard}>
+          <TouchableOpacity
+            key={idx}
+            style={styles.taskCard}
+            activeOpacity={0.8}
+            onPress={() => router.push({ pathname: '/TaskDetailScreen', params: { taskId: item.$id } })}
+          >
             <Text style={styles.taskTitle}>{item.Title}</Text>
             <Text style={styles.taskTheme}>{item.Tache}</Text>
             <Text style={styles.taskDesc}>{item.Description}</Text>
-          </View>
+          </TouchableOpacity>
         ))
       ) : (
         <Text style={{ color: '#888', marginTop: 16 }}>Aucune tâche publiée</Text>

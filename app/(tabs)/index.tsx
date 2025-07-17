@@ -81,26 +81,37 @@ export default function Index() {
         <View style={styles.mainContent}>
           {/* Titre au-dessus de la carte */}
           <Text style={styles.title}>{item.Title}</Text>
+          {/* Carte avec bouton superposé */}
+          <View style={{ position: 'relative' }}>
+            {(item.latitude !== undefined && item.longitude !== undefined) && (
+              <MapView
+                style={styles.map}
+                initialRegion={{
+                  latitude: item.latitude,
+                  longitude: item.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+              >
+                <Marker
+                  coordinate={{ latitude: item.latitude, longitude: item.longitude }}
+                  title={item.Title}
+                  description={item.Description}
+                />
+              </MapView>
+            )}
+            {/* Bouton superposé en bas à droite de la carte */}
+            <View style={styles.expandButtonOverlay}>
+              <TouchableOpacity
+                onPress={() => router.push(`/map?taskId=${item.$id}`)}
+                style={styles.expandButton}
+                activeOpacity={0.7}
+              >
+                <MaterialCommunityIcons name="arrow-expand" size={28} color="#3372DE" />
+              </TouchableOpacity>
+            </View>
+          </View>
           
-          {/* Carte */}
-          {(item.latitude !== undefined && item.longitude !== undefined) && (
-            <MapView
-              style={styles.map}
-              initialRegion={{
-                latitude: item.latitude,
-                longitude: item.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-            >
-              <Marker
-                coordinate={{ latitude: item.latitude, longitude: item.longitude }}
-                title={item.Title}
-                description={item.Description}
-              />
-            </MapView>
-          )}
-
           {/* Thème de la tâche */}
           <View style={styles.themeBadge}>
             <Text style={styles.themeBadgeText}>{item.Tache}</Text>
@@ -156,6 +167,7 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
+      {/* Liste des tâches */}
       <FlatList
         data={tache?.filter(item => !item.chosenUserId || item.chosenUserId === "")}
         keyExtractor={(_, index) => index.toString()}
@@ -203,7 +215,7 @@ const styles = StyleSheet.create({
   },
   map: {
     width: '100%',
-    height: 220,
+    height: 260,
     borderRadius: 16,
     alignSelf: 'center',
     marginBottom: 16,
@@ -273,5 +285,17 @@ const styles = StyleSheet.create({
     color: '#3372DE',
     fontWeight: 'bold',
     fontSize: 15,
+  },
+  expandButtonOverlay: {
+    position: 'absolute',
+    bottom: 30,
+    right: 18,
+    zIndex: 10,
+  },
+  expandButton: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 4,
+    elevation: 2,
   },
 });
