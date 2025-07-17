@@ -81,6 +81,12 @@ export default function Index() {
         <View style={styles.mainContent}>
           {/* Titre au-dessus de la carte */}
           <Text style={styles.title}>{item.Title}</Text>
+          {/* horaire */}
+          {item.dateExecution && (
+            <Text style={{textAlign: 'center', color: '#3372DE', marginBottom: 10}}>
+              {new Date(item.dateExecution).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' })}
+            </Text>
+          )}
           {/* Carte avec bouton superposé */}
           <View style={{ position: 'relative' }}>
             {(item.latitude !== undefined && item.longitude !== undefined) && (

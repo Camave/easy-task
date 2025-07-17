@@ -13,6 +13,7 @@ export interface Tache extends Models.Document{
     created_at: string,
     acceptedBy?: string[];
     chosenUserId?: string | null;
+    dateExecution?: string;
 }
 
 export interface User_P extends Models.Document{

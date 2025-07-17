@@ -44,6 +44,22 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="calendrier"
+        options={{
+          headerTitle: "Easy Task",
+          headerTitleStyle: {
+            color: "black",
+            fontSize: 20,
+            fontWeight: "bold",
+          },
+          headerTitleAlign: "left",
+          tabBarIcon: ({ color }) => (
+            <AntDesign name="calendar" size={28} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="index"
         options={{
           headerTitle: "Easy Task",

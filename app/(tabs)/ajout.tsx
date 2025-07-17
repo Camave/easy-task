@@ -1,6 +1,7 @@
 import useLocation from "@/hooks/useLocation";
 import { database, DATABASE_ID, TASK_COLLECTION_ID } from "@/lib/appwrite";
 import { useAuth } from "@/lib/auth-context";
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -24,6 +25,9 @@ export default function Index() {
 
     const [taskLatitude, setTaskLatitude] = useState<number | null>(null);
     const [taskLongitude, setTaskLongitude] = useState<number | null>(null);
+
+    const [dateExecution, setDateExecution] = useState<Date | null>(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     const handleAddLocation = () => {
       if (latitude !== null && longitude !== null) {
@@ -52,6 +56,7 @@ export default function Index() {
                     created_at: new Date().toISOString(),
                     acceptedBy: [],
                     chosenUserId: null,
+                    dateExecution: dateExecution ? dateExecution.toISOString() : null,
                 }
             );
 
@@ -103,6 +108,22 @@ export default function Index() {
       >
         Utiliser ma position actuelle
       </Button>
+        <View style={{ marginBottom: 16 }}>
+          <Button mode="outlined" onPress={() => setShowDatePicker(true)}>
+            {dateExecution ? `Date choisie : ${dateExecution.toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' })}` : 'Choisir date et heure'}
+          </Button>
+          {showDatePicker && (
+            <DateTimePicker
+              value={dateExecution || new Date()}
+              mode="datetime"
+              display="default"
+              onChange={(event, selectedDate) => {
+                setShowDatePicker(false);
+                if (selectedDate) setDateExecution(selectedDate);
+              }}
+            />
+          )}
+        </View>
         <Button mode ="contained" onPress = {handleSubmit} disabled={!Title || !Description}>
             Ajouter la tâche
         </Button>
