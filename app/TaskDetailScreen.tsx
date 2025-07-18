@@ -80,6 +80,12 @@ export default function TaskDetailScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{task.Title}</Text>
+      {/* horaire */}
+      {task.dateExecution && (
+        <Text style={{textAlign: 'center', color: '#3372DE', marginBottom: 10}}>
+          {new Date(task.dateExecution).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' })}
+        </Text>
+      )}
       {/* Carte avec bouton agrandir */}
       <View style={{ position: 'relative', width: '100%' }}>
         {task.latitude && task.longitude && (
