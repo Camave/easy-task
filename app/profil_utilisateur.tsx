@@ -2,6 +2,7 @@ import { database, DATABASE_ID, TASK_COLLECTION_ID, USER_COLLECTION_ID } from "@
 import { useAuth } from "@/lib/auth-context";
 import { MessagingService } from "@/service/messagingService";
 import { Tache, User_P } from "@/type/database.type";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -13,6 +14,7 @@ export default function ProfilUtilisateur() {
   const USER_ID_TO_SHOW = userId as string | undefined;
   const [profil, setProfil] = useState<User_P | null>(null);
   const [taches, setTaches] = useState<Tache[]>([]);
+  const [tachesOuIlEstChoisi, setTachesOuIlEstChoisi] = useState<Tache[]>([]);
   const { user } = useAuth();
   const router = useRouter();
   const [loadingConv, setLoadingConv] = useState(false);
@@ -43,6 +45,7 @@ export default function ProfilUtilisateur() {
     if (typeof USER_ID_TO_SHOW !== 'string' || !USER_ID_TO_SHOW) return;
     fetchProfil(USER_ID_TO_SHOW);
     fetchTaches(USER_ID_TO_SHOW);
+    fetchTachesOuIlEstChoisi(USER_ID_TO_SHOW); // Ajout récupération des tâches où il est prestataire
   }, [USER_ID_TO_SHOW]);
 
   const fetchProfil = async (userId: string) => {
@@ -71,10 +74,31 @@ export default function ProfilUtilisateur() {
     }
   };
 
+  const fetchTachesOuIlEstChoisi = async (userId: string) => {
+    try {
+      const response = await database.listDocuments(
+        DATABASE_ID,
+        TASK_COLLECTION_ID,
+        [Query.equal("chosenUserId", userId)]
+      );
+      setTachesOuIlEstChoisi(response.documents as Tache[]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   let photoUrl: string | null = null;
   if (profil?.photo_id) {
     photoUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_BUCKET_ID}/files/${profil.photo_id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}`;
   }
+
+  // Calcul de la moyenne des notes reçues en tant que prestataire
+  const tachesNotees = tachesOuIlEstChoisi.filter(
+    t => Number(t.rating) > 0
+  );
+  const moyenne = tachesNotees.length > 0
+    ? tachesNotees.reduce((acc, curr) => acc + Number(curr.rating), 0) / tachesNotees.length
+    : null;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -82,7 +106,15 @@ export default function ProfilUtilisateur() {
         {photoUrl && (
           <Image source={{ uri: photoUrl }} style={styles.avatar} />
         )}
-        <Text style={styles.name}>{profil?.nom}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+          <Text style={styles.name}>{profil?.nom}</Text>
+          {moyenne !== null && (
+            <>
+              <MaterialCommunityIcons name="star" size={18} color="#FFD700" style={{ marginLeft: 8, marginRight: 2 }} />
+              <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{moyenne.toFixed(2)} / 5</Text>
+            </>
+          )}
+        </View>
         <Text style={styles.age}>{profil?.age} ans</Text>
         <Text style={styles.bio}>{profil?.bio}</Text>
       </View>

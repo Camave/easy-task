@@ -1,11 +1,13 @@
 import { database, DATABASE_ID, TASK_COLLECTION_ID, USER_COLLECTION_ID } from "@/lib/appwrite";
 import { useAuth } from "@/lib/auth-context";
 import { Tache, User_P } from "@/type/database.type";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Query } from "react-native-appwrite";
 import { Button } from "react-native-paper";
+import StarRating from "react-native-star-rating-widget";
 import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 
 export default function Profil() {
@@ -14,6 +16,7 @@ export default function Profil() {
   const [User_profil, setUser_profil] = useState<User_P[]>([]);
   const [allProfils, setAllProfils] = useState<User_P[]>([]);
   const [tachesOuPostule, setTachesOuPostule] = useState<Tache[]>([]);
+  const [tachesOuJeSuisChoisi, setTachesOuJeSuisChoisi] = useState<Tache[]>([]);
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     { key: 'demandes', title: 'Mes demandes' },
@@ -28,6 +31,7 @@ export default function Profil() {
       fetchProfils();
       fetchAllProfils();
       fetchTachesOuPostule();
+      fetchTachesOuJeSuisChoisi(); // Ajout de la récupération des tâches où je suis choisi
     }, [user])
   );
 
@@ -84,6 +88,20 @@ export default function Profil() {
     }
   };
 
+  const fetchTachesOuJeSuisChoisi = async () => {
+    try {
+      if (!user) return;
+      const response = await database.listDocuments(
+        DATABASE_ID,
+        TASK_COLLECTION_ID,
+        [Query.equal("chosenUserId", user.$id)]
+      );
+      setTachesOuJeSuisChoisi(response.documents as Tache[]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleChooseUser = async (taskId: string, userId: string) => {
     try {
       await database.updateDocument(
@@ -102,6 +120,15 @@ export default function Profil() {
   if (User_profil[0]?.photo_id) {
     photoUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_BUCKET_ID}/files/${User_profil[0].photo_id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}`;
   }
+
+  // Calcul de la moyenne des notes reçues par l'utilisateur connecté
+  const tachesNoteesPourMoi = tachesOuJeSuisChoisi.filter(
+    (item) => Number(item.rating) > 0
+  );
+  const moyenne =
+    tachesNoteesPourMoi.length > 0
+      ? tachesNoteesPourMoi.reduce((acc, curr) => acc + Number(curr.rating), 0) / tachesNoteesPourMoi.length
+      : 0;
 
   // Onglet 1 : Mes demandes
   const DemandesRoute = () => (
@@ -141,6 +168,72 @@ export default function Profil() {
               })
             ) : (
               <Text style={{ color: '#888' }}>Aucune personne n'a encore accepté</Text>
+            )}
+            {/* BOUTON MARQUER COMME TERMINÉE */}
+            {item.status !== "terminée" && (
+              <Button
+                mode="contained"
+                style={{ marginTop: 8, backgroundColor: '#7EACEF' }}
+                onPress={async () => {
+                  try {
+                    await database.updateDocument(
+                      DATABASE_ID,
+                      TASK_COLLECTION_ID,
+                      item.$id,
+                      { status: "terminée" }
+                    );
+                    fetchHabits();
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }}
+              >
+                Marquer comme terminée
+              </Button>
+            )}
+            {item.status === "terminée" && (
+              <Text style={{ color: '#388E3C', fontWeight: 'bold', marginTop: 8 }}>Tâche terminée</Text>
+            )}
+            {/* SYSTÈME DE NOTATION PAR ÉTOILES */}
+            {item.status === "terminée" && item.chosenUserId && (!Number(item.rating) || Number(item.rating) === 0) && (
+              <View style={{ marginTop: 8 }}>
+                <Text style={{ fontWeight: 'bold', marginBottom: 4 }}>Note le prestataire :</Text>
+                <StarRating
+                  rating={Number(item.rating) || 0}
+                  onChange={async (rating) => {
+                    try {
+                      await database.updateDocument(
+                        DATABASE_ID,
+                        TASK_COLLECTION_ID,
+                        item.$id,
+                        { rating }
+                      );
+                      fetchHabits();
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                  starSize={32}
+                  color="#FFD700"
+                  enableHalfStar={false}
+                  maxStars={5}
+                />
+              </View>
+            )}
+            {/* Affichage de la note si déjà noté */}
+            {item.status === "terminée" && item.chosenUserId && Number(item.rating) > 0 && (
+              <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ fontWeight: 'bold', marginRight: 8 }}>Note donnée :</Text>
+                <StarRating
+                  rating={Number(item.rating)}
+                  onChange={() => {}}
+                  starSize={24}
+                  color="#FFD700"
+                  enableHalfStar={false}
+                  maxStars={5}
+                  starStyle={{ pointerEvents: 'none' }}
+                />
+              </View>
             )}
           </View>
         ))
@@ -212,7 +305,16 @@ export default function Profil() {
               style={styles.avatar}
             />
           )}
-          <Text style={styles.name}>{User_profil[0]?.nom}</Text>
+          {/* Ligne nom + moyenne */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+            <Text style={styles.name}>{User_profil[0]?.nom}</Text>
+            {tachesNoteesPourMoi.length > 0 && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+                <MaterialCommunityIcons name="star" size={18} color="#FFD700" style={{ marginRight: 2 }} />
+                <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{moyenne.toFixed(2)} / 5</Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.age}>{User_profil[0]?.age} ans</Text>
           <Text style={styles.bio}>{User_profil[0]?.bio}</Text>
         </View>
@@ -256,18 +358,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 24,
-    paddingTop: 100,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 32,
   },
   profileInfo: {
     alignItems: 'flex-start',
     flex: 1,
     gap: 6,
+    marginBottom: 70,
   },
   avatar: {
     width: 90,

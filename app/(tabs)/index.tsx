@@ -74,6 +74,13 @@ export default function Index() {
   const renderItem = ({ item }: { item: Tache }) => {
     const profil = allProfils.find(p => p.User_id === item.User_id);
     const dejaAccepte = item.acceptedBy?.includes(user?.$id ?? "");
+    // Calcul synchrone de la moyenne à partir de tache (ou d'un autre tableau déjà chargé)
+    const tachesNotees = tache?.filter(
+      t => t.chosenUserId === profil?.User_id && Number(t.rating) > 0
+    ) || [];
+    const moyenne = tachesNotees.length > 0
+      ? tachesNotees.reduce((acc, curr) => acc + Number(curr.rating), 0) / tachesNotees.length
+      : null;
     
     return (
       <View style={styles.taskContainer}> 
@@ -142,7 +149,14 @@ export default function Index() {
               <MaterialCommunityIcons name="account-circle" size={56} color="#3372DE" style={{ marginRight: 10 }} />
             )}
             <View style={{ marginLeft: 12 }}>
-              <Text style={styles.profileName}>{profil?.nom ?? 'Utilisateur inconnu'}</Text>
+              <Text style={styles.profileName}>{profil?.nom ?? 'Utilisateur inconnu'}
+                {moyenne !== null && (
+                  <>
+                    <MaterialCommunityIcons name="star" size={14} color="#FFD700" style={{ marginLeft: 4, marginRight: 1 }} />
+                    <Text style={{ fontSize: 13, fontWeight: 'bold' }}> {moyenne.toFixed(2)} / 5</Text>
+                  </>
+                )}
+              </Text>
               {profil?.age && <Text style={styles.profileAge}>{profil.age} ans</Text>}
             </View>
           </TouchableOpacity>

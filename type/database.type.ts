@@ -5,7 +5,6 @@ export interface Tache extends Models.Document{
     Title: string,
     Description: string,
     Tache: string,
-    Ville:string,
     latitude: number,
     longitude: number,
     Task_count : number,
@@ -14,6 +13,8 @@ export interface Tache extends Models.Document{
     acceptedBy?: string[];
     chosenUserId?: string | null;
     dateExecution?: string;
+    status: "en cours"|"terminée";
+    rating?: string;
 }
 
 export interface User_P extends Models.Document{
