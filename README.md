@@ -1,50 +1,66 @@
-# Welcome to your Expo app 👋
+# Easy Task
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**Easy Task** est une application mobile qui met en relation des particuliers pour des **services ponctuels** comme le ménage, la garde d’animaux, le bricolage, le déménagement, et plus encore.  
+Elle permet de trouver rapidement une aide proche de chez soi, de communiquer facilement et de payer en toute sécurité.
 
-## Get started
+---
 
-1. Install dependencies
+## ✨ Fonctionnalités
 
+- 🔍 **Recherche par localisation** pour trouver des prestataires proches.
+- 💬 **Messagerie intégrée** pour échanger directement dans l’application.
+- 💳 **Paiement sécurisé** via la plateforme.
+- ⭐ **Système de notation** pour évaluer les prestataires et les clients.
+
+---
+
+## 🎯 Public visé
+
+- Étudiants à la recherche de missions ponctuelles.
+- Retraités souhaitant proposer leurs services.
+- Familles nombreuses ayant besoin d’un coup de main.
+
+---
+
+## 🛠️ Technologies utilisées
+
+- **React Native** (framework mobile multiplateforme)  
+- **Expo** (environnement de développement rapide pour React Native)  
+- **Appwrite** (base de données et backend-as-a-service)
+
+---
+
+## 🚧 État du projet
+
+Easy Task est actuellement **en développement**.  
+Ce dépôt contient le code source et les instructions pour exécuter l’application localement.
+
+---
+
+## 💻 Installation et exécution locale
+
+1. **Cloner le dépôt**
+   ```bash
+   git clone https://github.com/ton-utilisateur/easy-task.git
+   cd easy-task
+   ```
+
+2. **Installer les dépendances**
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. **Lancer l’application avec Expo**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. **Tester sur votre appareil**  
+   - Installer l’application **Expo Go** sur iOS ou Android.  
+   - Scanner le QR code affiché dans le terminal ou la page web d’Expo.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 📩 Contact
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Pour toute question ou suggestion : **monnier.camille06@gmail.com**
